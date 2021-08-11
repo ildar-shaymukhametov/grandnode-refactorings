@@ -48,15 +48,21 @@ namespace Grand.Core.Data
                 {
                     continue;
                 }
-                var key = setting.Substring(0, separatorIndex).Trim();
                 var value = setting.Substring(separatorIndex + 1).Trim();
-                if (!string.IsNullOrEmpty(key))
-                    key = RemoveSpecialCharacters(key);
+                var key = GetKey(setting, separatorIndex);
 
                 UpdateSettings(shellSettings, key, value);
             }
 
             return shellSettings;
+        }
+
+        private string GetKey(string setting, int separatorIndex)
+        {
+            var key = setting.Substring(0, separatorIndex).Trim();
+            if (!string.IsNullOrEmpty(key))
+                key = RemoveSpecialCharacters(key);
+            return key;
         }
 
         private static void UpdateSettings(DataSettings shellSettings, string key, string value)
