@@ -59,10 +59,10 @@ namespace Grand.Core.Data
 
         private string GetKey(string setting, int separatorIndex)
         {
-            var key = setting.Substring(0, separatorIndex).Trim();
-            if (!string.IsNullOrEmpty(key))
-                key = RemoveSpecialCharacters(key);
-            return key;
+            var result = setting.Substring(0, separatorIndex).Trim();
+            if (!string.IsNullOrEmpty(result))
+                result = RemoveSpecialCharacters(result);
+            return result;
         }
 
         private static void UpdateSettings(DataSettings shellSettings, string key, string value)
