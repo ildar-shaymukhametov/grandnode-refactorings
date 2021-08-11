@@ -72,15 +72,15 @@ namespace Grand.Core.Data
 
         private static List<string> ExtractSettings(string text)
         {
-            var settings = new List<string>();
+            var result = new List<string>();
             using (var reader = new StringReader(text))
             {
                 string str;
                 while ((str = reader.ReadLine()) != null)
-                    settings.Add(str);
+                    result.Add(str);
             }
 
-            return settings;
+            return result;
         }
 
         /// <summary>
