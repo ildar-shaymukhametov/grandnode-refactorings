@@ -43,14 +43,19 @@ namespace Grand.Core.Data
 
             foreach (var setting in settings)
             {
-                var separatorIndex = setting.IndexOf(separator);
-                var value = GetValue(setting, separatorIndex);
-                var key = GetKey(setting, separatorIndex);
-
-                UpdateSettings(shellSettings, key, value);
+                var pair = CreateKeyValuePairs(setting);
+                UpdateSettings(shellSettings, pair.Key, pair.Value);
             }
 
             return shellSettings;
+        }
+
+        private KeyValuePair<string, string> CreateKeyValuePairs(string setting)
+        {
+            var separatorIndex = setting.IndexOf(separator);
+            var value = GetValue(setting, separatorIndex);
+            var key = GetKey(setting, separatorIndex);
+            return new KeyValuePair<string, string>(key, value);
         }
 
         private static string GetValue(string setting, int separatorIndex)
