@@ -3,6 +3,7 @@ using Grand.Domain.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Grand.Core.Data
@@ -39,13 +40,10 @@ namespace Grand.Core.Data
             if (String.IsNullOrEmpty(text))
                 return shellSettings;
 
-            var settings = ExtractSettings(text);
-
-            foreach (var setting in settings)
-            {
-                var pair = CreateKeyValuePairs(setting);
-                UpdateSettings(shellSettings, pair);
-            }
+            ExtractSettings(text)
+                .Select(CreateKeyValuePairs)
+                .ToList()
+                .ForEach(pair => UpdateSettings(shellSettings, pair));
 
             return shellSettings;
         }
