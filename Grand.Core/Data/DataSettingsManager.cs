@@ -53,21 +53,26 @@ namespace Grand.Core.Data
                 if (!string.IsNullOrEmpty(key))
                     key = RemoveSpecialCharacters(key);
 
-                switch (key)
-                {
-                    case "DataProvider":
-                        shellSettings.DataProvider = value;
-                        break;
-                    case "DataConnectionString":
-                        shellSettings.DataConnectionString = value;
-                        break;
-                    default:
-                        shellSettings.RawDataSettings.Add(key, value);
-                        break;
-                }
+                UpdateSettings(shellSettings, key, value);
             }
 
             return shellSettings;
+        }
+
+        private static void UpdateSettings(DataSettings shellSettings, string key, string value)
+        {
+            switch (key)
+            {
+                case "DataProvider":
+                    shellSettings.DataProvider = value;
+                    break;
+                case "DataConnectionString":
+                    shellSettings.DataConnectionString = value;
+                    break;
+                default:
+                    shellSettings.RawDataSettings.Add(key, value);
+                    break;
+            }
         }
 
         private static List<string> ExtractSettings(string text)
