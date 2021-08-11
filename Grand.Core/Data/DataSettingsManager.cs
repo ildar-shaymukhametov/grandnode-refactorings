@@ -48,13 +48,18 @@ namespace Grand.Core.Data
                 {
                     continue;
                 }
-                var value = setting.Substring(separatorIndex + 1).Trim();
+                var value = GetValue(setting, separatorIndex);
                 var key = GetKey(setting, separatorIndex);
 
                 UpdateSettings(shellSettings, key, value);
             }
 
             return shellSettings;
+        }
+
+        private static string GetValue(string setting, int separatorIndex)
+        {
+            return setting.Substring(separatorIndex + 1).Trim();
         }
 
         private string GetKey(string setting, int separatorIndex)
