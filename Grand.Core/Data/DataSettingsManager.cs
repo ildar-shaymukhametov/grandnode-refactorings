@@ -44,10 +44,6 @@ namespace Grand.Core.Data
             foreach (var setting in settings)
             {
                 var separatorIndex = setting.IndexOf(separator);
-                if (separatorIndex == -1)
-                {
-                    continue;
-                }
                 var value = GetValue(setting, separatorIndex);
                 var key = GetKey(setting, separatorIndex);
 
@@ -93,7 +89,12 @@ namespace Grand.Core.Data
             {
                 string str;
                 while ((str = reader.ReadLine()) != null)
-                    result.Add(str);
+                {
+                    if (str.IndexOf(separator) != -1)
+                    {
+                        result.Add(str);
+                    }
+                }
             }
 
             return result;
