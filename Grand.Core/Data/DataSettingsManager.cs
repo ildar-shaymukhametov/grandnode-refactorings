@@ -39,13 +39,7 @@ namespace Grand.Core.Data
             if (String.IsNullOrEmpty(text))
                 return shellSettings;
 
-            var settings = new List<string>();
-            using (var reader = new StringReader(text))
-            {
-                string str;
-                while ((str = reader.ReadLine()) != null)
-                    settings.Add(str);
-            }
+            var settings = ExtractSettings(text);
 
             foreach (var setting in settings)
             {
@@ -74,6 +68,19 @@ namespace Grand.Core.Data
             }
 
             return shellSettings;
+        }
+
+        private static List<string> ExtractSettings(string text)
+        {
+            var settings = new List<string>();
+            using (var reader = new StringReader(text))
+            {
+                string str;
+                while ((str = reader.ReadLine()) != null)
+                    settings.Add(str);
+            }
+
+            return settings;
         }
 
         /// <summary>
