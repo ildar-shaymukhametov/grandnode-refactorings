@@ -44,7 +44,7 @@ namespace Grand.Core.Data
             foreach (var setting in settings)
             {
                 var pair = CreateKeyValuePairs(setting);
-                UpdateSettings(shellSettings, pair.Key, pair.Value);
+                UpdateSettings(shellSettings, pair);
             }
 
             return shellSettings;
@@ -71,18 +71,18 @@ namespace Grand.Core.Data
             return result;
         }
 
-        private static void UpdateSettings(DataSettings shellSettings, string key, string value)
+        private static void UpdateSettings(DataSettings shellSettings, KeyValuePair<string, string> pair)
         {
-            switch (key)
+            switch (pair.Key)
             {
                 case "DataProvider":
-                    shellSettings.DataProvider = value;
+                    shellSettings.DataProvider = pair.Value;
                     break;
                 case "DataConnectionString":
-                    shellSettings.DataConnectionString = value;
+                    shellSettings.DataConnectionString = pair.Value;
                     break;
                 default:
-                    shellSettings.RawDataSettings.Add(key, value);
+                    shellSettings.RawDataSettings.Add(pair.Key, pair.Value);
                     break;
             }
         }
