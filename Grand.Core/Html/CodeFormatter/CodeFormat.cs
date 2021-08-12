@@ -149,25 +149,13 @@ namespace Grand.Core.Html.CodeFormatter
         /// <returns>A string containing the HTML code fragment.</returns>
         protected override string MatchEval(Match match)
 		{
-			if(match.Groups[1].Success) //comment
-			{
-                var reader = new StringReader(match.ToString());
-				string line;
-                var sb = new StringBuilder();
-				while ((line = reader.ReadLine()) != null)
-				{
-					if(sb.Length > 0)
-					{
-						sb.Append("\n");
-					}
-					sb.Append("<span class=\"rem\">");
-					sb.Append(line);
-					sb.Append("</span>");
-				}
-				return sb.ToString();
-			}
-			if(match.Groups[2].Success) //string literal
-			{
+			var result = "";
+			if(match.Groups[1].Success)
+            {
+                result = GenerateCommentFragment(match);
+            }
+            if (match.Groups[2].Success) //string literal
+            {
 				return "<span class=\"str\">" + match.ToString() + "</span>";
 			}
 			if(match.Groups[3].Success) //preprocessor keyword
@@ -181,6 +169,24 @@ namespace Grand.Core.Html.CodeFormatter
 			System.Diagnostics.Debug.Assert(false, "None of the above!");
 			return ""; //none of the above
 		}
-	}
+
+        private static string GenerateCommentFragment(Match match)
+        {
+            var reader = new StringReader(match.ToString());
+            string line;
+            var result = new StringBuilder();
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (result.Length > 0)
+                {
+                    result.Append("\n");
+                }
+                result.Append("<span class=\"rem\">");
+                result.Append(line);
+                result.Append("</span>");
+            }
+            return result.ToString();
+        }
+    }
 }
 
