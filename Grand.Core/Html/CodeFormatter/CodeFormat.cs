@@ -1,4 +1,4 @@
-#region Copyright © 2001-2003 Jean-Claude Manoli [jc@manoli.net]
+#region Copyright ï¿½ 2001-2003 Jean-Claude Manoli [jc@manoli.net]
 /*
  * This software is provided 'as-is', without any express or implied warranty.
  * In no event will the author(s) be held liable for any damages arising from
@@ -89,47 +89,52 @@ namespace Grand.Core.Html.CodeFormatter
 
 		/// <summary/>
 		protected CodeFormat()
-		{
-			//generate the keyword and preprocessor regexes from the keyword lists
-			var r = new Regex(@"\w+|-\w+|#\w+|@@\w+|#(?:\\(?:s|w)(?:\*|\+)?\w+)+|@\\w\*+");
-			string regKeyword = r.Replace(Keywords, @"(?<=^|\W)$0(?=\W)");
-			string regPreproc = r.Replace(Preprocessors, @"(?<=^|\s)$0(?=\s|$)");
-			r = new Regex(@" +");
-			regKeyword = r.Replace(regKeyword, @"|");
-			regPreproc = r.Replace(regPreproc, @"|");
+        {
+            //generate the keyword and preprocessor regexes from the keyword lists
+            var r = new Regex(@"\w+|-\w+|#\w+|@@\w+|#(?:\\(?:s|w)(?:\*|\+)?\w+)+|@\\w\*+");
+            string regKeyword = r.Replace(Keywords, @"(?<=^|\W)$0(?=\W)");
+            string regPreproc = r.Replace(Preprocessors, @"(?<=^|\s)$0(?=\s|$)");
+            r = new Regex(@" +");
+            regKeyword = r.Replace(regKeyword, @"|");
+            regPreproc = r.Replace(regPreproc, @"|");
 
-			if (regPreproc.Length == 0)
-			{
-				regPreproc = "(?!.*)_{37}(?<!.*)"; //use something quite impossible...
-			}
+            if (regPreproc.Length == 0)
+            {
+                regPreproc = "(?!.*)_{37}(?<!.*)"; //use something quite impossible...
+            }
 
-			//build a master regex with capturing groups
+            var regAll = BuildMasterRegex(regKeyword, regPreproc);
+
+            RegexOptions caseInsensitive = CaseSensitive ? 0 : RegexOptions.IgnoreCase;
+            CodeRegex = new Regex(regAll.ToString(), RegexOptions.Singleline | caseInsensitive);
+        }
+
+        private StringBuilder BuildMasterRegex(string regKeyword, string regPreproc)
+        {
             var regAll = new StringBuilder();
-			regAll.Append("(");
-			regAll.Append(CommentRegex);
-			regAll.Append(")|(");
-			regAll.Append(StringRegex);
-			if (regPreproc.Length > 0)
-			{
-				regAll.Append(")|(");
-				regAll.Append(regPreproc);
-			}
-			regAll.Append(")|(");
-			regAll.Append(regKeyword);
-			regAll.Append(")");
+            regAll.Append("(");
+            regAll.Append(CommentRegex);
+            regAll.Append(")|(");
+            regAll.Append(StringRegex);
+            if (regPreproc.Length > 0)
+            {
+                regAll.Append(")|(");
+                regAll.Append(regPreproc);
+            }
+            regAll.Append(")|(");
+            regAll.Append(regKeyword);
+            regAll.Append(")");
+            return regAll;
+        }
 
-			RegexOptions caseInsensitive = CaseSensitive ? 0 : RegexOptions.IgnoreCase;
-			CodeRegex = new Regex(regAll.ToString(), RegexOptions.Singleline | caseInsensitive);
-		}
-
-		/// <summary>
-		/// Called to evaluate the HTML fragment corresponding to each 
-		/// matching token in the code.
-		/// </summary>
-		/// <param name="match">The <see cref="Match"/> resulting from a 
-		/// single regular expression match.</param>
-		/// <returns>A string containing the HTML code fragment.</returns>
-		protected override string MatchEval(Match match)
+        /// <summary>
+        /// Called to evaluate the HTML fragment corresponding to each 
+        /// matching token in the code.
+        /// </summary>
+        /// <param name="match">The <see cref="Match"/> resulting from a 
+        /// single regular expression match.</param>
+        /// <returns>A string containing the HTML code fragment.</returns>
+        protected override string MatchEval(Match match)
 		{
 			if(match.Groups[1].Success) //comment
 			{
