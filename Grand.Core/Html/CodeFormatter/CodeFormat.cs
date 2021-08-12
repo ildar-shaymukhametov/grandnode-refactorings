@@ -92,15 +92,21 @@ namespace Grand.Core.Html.CodeFormatter
         {
             //generate the keyword and preprocessor regexes from the keyword lists
             var r = new Regex(@"\w+|-\w+|#\w+|@@\w+|#(?:\\(?:s|w)(?:\*|\+)?\w+)+|@\\w\*+");
-            string regKeyword = r.Replace(Keywords, @"(?<=^|\W)$0(?=\W)");
             var r2 = new Regex(@" +");
-            regKeyword = r2.Replace(regKeyword, @"|");
+            var regKeyword = GetKeywordRegex(r, r2);
             var regPreproc = GetPreprocessorRegex(r, r2);
 
             var regAll = BuildMasterRegex(regKeyword, regPreproc);
 
             RegexOptions caseInsensitive = CaseSensitive ? 0 : RegexOptions.IgnoreCase;
             CodeRegex = new Regex(regAll.ToString(), RegexOptions.Singleline | caseInsensitive);
+        }
+
+        private string GetKeywordRegex(Regex r, Regex r2)
+        {
+            string result = r.Replace(Keywords, @"(?<=^|\W)$0(?=\W)");
+            result = r2.Replace(result, @"|");
+            return result;
         }
 
         private string GetPreprocessorRegex(Regex r, Regex r2)
