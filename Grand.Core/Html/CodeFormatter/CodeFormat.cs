@@ -93,20 +93,27 @@ namespace Grand.Core.Html.CodeFormatter
             //generate the keyword and preprocessor regexes from the keyword lists
             var r = new Regex(@"\w+|-\w+|#\w+|@@\w+|#(?:\\(?:s|w)(?:\*|\+)?\w+)+|@\\w\*+");
             string regKeyword = r.Replace(Keywords, @"(?<=^|\W)$0(?=\W)");
-            string regPreproc = r.Replace(Preprocessors, @"(?<=^|\s)$0(?=\s|$)");
-            r = new Regex(@" +");
-            regKeyword = r.Replace(regKeyword, @"|");
-            regPreproc = r.Replace(regPreproc, @"|");
-
-            if (regPreproc.Length == 0)
-            {
-                regPreproc = "(?!.*)_{37}(?<!.*)"; //use something quite impossible...
-            }
+            var r2 = new Regex(@" +");
+            regKeyword = r2.Replace(regKeyword, @"|");
+            var regPreproc = GetPreprocessorRegex(r, r2);
 
             var regAll = BuildMasterRegex(regKeyword, regPreproc);
 
             RegexOptions caseInsensitive = CaseSensitive ? 0 : RegexOptions.IgnoreCase;
             CodeRegex = new Regex(regAll.ToString(), RegexOptions.Singleline | caseInsensitive);
+        }
+
+        private string GetPreprocessorRegex(Regex r, Regex r2)
+        {
+            string result = r.Replace(Preprocessors, @"(?<=^|\s)$0(?=\s|$)");
+            result = r2.Replace(result, @"|");
+
+            if (result.Length == 0)
+            {
+                result = "(?!.*)_{37}(?<!.*)"; //use something quite impossible...
+            }
+
+            return result;
         }
 
         private StringBuilder BuildMasterRegex(string regKeyword, string regPreproc)
