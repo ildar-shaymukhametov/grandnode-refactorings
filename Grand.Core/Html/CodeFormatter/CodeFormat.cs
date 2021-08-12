@@ -111,20 +111,20 @@ namespace Grand.Core.Html.CodeFormatter
 
         private StringBuilder BuildMasterRegex(string regKeyword, string regPreproc)
         {
-            var regAll = new StringBuilder();
-            regAll.Append("(");
-            regAll.Append(CommentRegex);
-            regAll.Append(")|(");
-            regAll.Append(StringRegex);
+            var result = new StringBuilder();
+            result.Append("(");
+            result.Append(CommentRegex);
+            result.Append(")|(");
+            result.Append(StringRegex);
             if (regPreproc.Length > 0)
             {
-                regAll.Append(")|(");
-                regAll.Append(regPreproc);
+                result.Append(")|(");
+                result.Append(regPreproc);
             }
-            regAll.Append(")|(");
-            regAll.Append(regKeyword);
-            regAll.Append(")");
-            return regAll;
+            result.Append(")|(");
+            result.Append(regKeyword);
+            result.Append(")");
+            return result;
         }
 
         /// <summary>
