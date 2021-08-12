@@ -154,24 +154,39 @@ namespace Grand.Core.Html.CodeFormatter
             {
                 result = GenerateCommentFragment(match);
             }
-            else if (match.Groups[2].Success) //string literal
+            else if (match.Groups[2].Success)
             {
-				result = "<span class=\"str\">" + match.ToString() + "</span>";
-			}
-            else if (match.Groups[3].Success) //preprocessor keyword
+                result = GenerateStringLiteralFragment(match);
+            }
+            else if (match.Groups[3].Success)
             {
-				result = "<span class=\"preproc\">" + match.ToString() + "</span>";
-			}
-            else if (match.Groups[4].Success) //keyword
+                result = GeneratePreprocessorKeywordFragment(match);
+            }
+            else if (match.Groups[4].Success)
             {
-				result = "<span class=\"kwrd\">" + match.ToString() + "</span>";
-			}
+                result = GenerateKeywordFragment(match);
+            }
             else
             {
                 System.Diagnostics.Debug.Assert(false, "None of the above!");
             }
 			return result; //none of the above
 		}
+
+        private static string GenerateKeywordFragment(Match match)
+        {
+            return "<span class=\"kwrd\">" + match.ToString() + "</span>";
+        }
+
+        private static string GeneratePreprocessorKeywordFragment(Match match)
+        {
+            return "<span class=\"preproc\">" + match.ToString() + "</span>";
+        }
+
+        private static string GenerateStringLiteralFragment(Match match)
+        {
+            return "<span class=\"str\">" + match.ToString() + "</span>";
+        }
 
         private static string GenerateCommentFragment(Match match)
         {
