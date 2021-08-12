@@ -156,18 +156,18 @@ namespace Grand.Core.Html.CodeFormatter
             }
             if (match.Groups[2].Success) //string literal
             {
-				return "<span class=\"str\">" + match.ToString() + "</span>";
+				result = "<span class=\"str\">" + match.ToString() + "</span>";
 			}
 			if(match.Groups[3].Success) //preprocessor keyword
 			{
-				return "<span class=\"preproc\">" + match.ToString() + "</span>";
+				result = "<span class=\"preproc\">" + match.ToString() + "</span>";
 			}
 			if(match.Groups[4].Success) //keyword
 			{
-				return "<span class=\"kwrd\">" + match.ToString() + "</span>";
+				result = "<span class=\"kwrd\">" + match.ToString() + "</span>";
 			}
 			System.Diagnostics.Debug.Assert(false, "None of the above!");
-			return ""; //none of the above
+			return result; //none of the above
 		}
 
         private static string GenerateCommentFragment(Match match)
