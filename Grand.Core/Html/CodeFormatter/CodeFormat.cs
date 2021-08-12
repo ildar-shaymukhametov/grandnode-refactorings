@@ -154,19 +154,22 @@ namespace Grand.Core.Html.CodeFormatter
             {
                 result = GenerateCommentFragment(match);
             }
-            if (match.Groups[2].Success) //string literal
+            else if (match.Groups[2].Success) //string literal
             {
 				result = "<span class=\"str\">" + match.ToString() + "</span>";
 			}
-			if(match.Groups[3].Success) //preprocessor keyword
-			{
+            else if (match.Groups[3].Success) //preprocessor keyword
+            {
 				result = "<span class=\"preproc\">" + match.ToString() + "</span>";
 			}
-			if(match.Groups[4].Success) //keyword
-			{
+            else if (match.Groups[4].Success) //keyword
+            {
 				result = "<span class=\"kwrd\">" + match.ToString() + "</span>";
 			}
-			System.Diagnostics.Debug.Assert(false, "None of the above!");
+            else
+            {
+                System.Diagnostics.Debug.Assert(false, "None of the above!");
+            }
 			return result; //none of the above
 		}
 
