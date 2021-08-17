@@ -4,13 +4,12 @@ using System.Net;
 
 namespace Grand.Core.Html.CodeFormatter
 {
-	/// <summary>
-	/// Represents a code format helper
-	/// </summary>
+    /// <summary>
+    /// Represents a code format helper
+    /// </summary>
     public static class CodeFormatHelper
     {
         #region Fields
-        private readonly static Regex regexHtml = new Regex("<[^>]*>", RegexOptions.Compiled);
         private readonly static Regex regexCode2 = new Regex(@"\[code\](?<inner>(.*?))\[/code\]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         #endregion
 
@@ -73,19 +72,6 @@ namespace Grand.Core.Html.CodeFormatter
         }
 
         /// <summary>
-        /// Strips HTML
-        /// </summary>
-        /// <param name="html">HTML</param>
-        /// <returns>Formatted text</returns>
-        private static string StripHtml(string html)
-        {
-            if (string.IsNullOrEmpty(html))
-                return string.Empty;
-
-            return regexHtml.Replace(html, string.Empty);
-        }
-
-        /// <summary>
         /// Returns the formatted text.
         /// </summary>
         /// <param name="options">Whatever options were set in the regex groups.</param>
@@ -93,52 +79,13 @@ namespace Grand.Core.Html.CodeFormatter
         /// <returns>The formatted string of the match.</returns>
         private static string Highlight(HighlightOptions options, string text)
         {
-            switch (options.Language)
+            var formatter = new FormatterFactory(options).Create();
+            if (formatter == null)
             {
-                case "c#":
-                    var csf = new CSharpFormat();
-                    csf.LineNumbers = options.DisplayLineNumbers;
-                    csf.Alternate = options.AlternateLineNumbers;
-                    return WebUtility.HtmlDecode(csf.FormatCode(text));
-
-                case "vb":
-                    var vbf = new VisualBasicFormat();
-                    vbf.LineNumbers = options.DisplayLineNumbers;
-                    vbf.Alternate = options.AlternateLineNumbers;
-                    return vbf.FormatCode(text);
-
-                case "js":
-                    var jsf = new JavaScriptFormat();
-                    jsf.LineNumbers = options.DisplayLineNumbers;
-                    jsf.Alternate = options.AlternateLineNumbers;
-                    return WebUtility.HtmlDecode(jsf.FormatCode(text));
-
-                case "html":
-                    var htmlf = new HtmlFormat();
-                    htmlf.LineNumbers = options.DisplayLineNumbers;
-                    htmlf.Alternate = options.AlternateLineNumbers;
-                    text = StripHtml(text).Trim();
-                    string code = htmlf.FormatCode(WebUtility.HtmlDecode(text)).Trim();
-                    return code.Replace("\r\n", "<br />").Replace("\n", "<br />");
-
-                case "xml":
-                    var xmlf = new HtmlFormat();
-                    xmlf.LineNumbers = options.DisplayLineNumbers;
-                    xmlf.Alternate = options.AlternateLineNumbers;
-                    text = text.Replace("<br />", "\r\n");
-                    text = StripHtml(text).Trim();
-                    string xml = xmlf.FormatCode(WebUtility.HtmlDecode(text)).Trim();
-                    return xml.Replace("\r\n", "<br />").Replace("\n", "<br />");                
-
-                case "msh":
-                    var mshf = new MshFormat();
-                    mshf.LineNumbers = options.DisplayLineNumbers;
-                    mshf.Alternate = options.AlternateLineNumbers;
-                    return WebUtility.HtmlDecode(mshf.FormatCode(text));
-
+                return string.Empty;
             }
 
-            return string.Empty;
+            return formatter.Format(text);
         }
 
         #endregion
@@ -164,6 +111,149 @@ namespace Grand.Core.Html.CodeFormatter
         }
 
         #endregion
+    }
+
+    public class FormatterFactory
+    {
+        private readonly Regex htmlRegex;
+        private readonly HighlightOptions options;
+
+        public FormatterFactory(HighlightOptions options)
+        {
+            this.htmlRegex = new Regex("<[^>]*>", RegexOptions.Compiled);
+            this.options = options;
+        }
+
+        public Formatter Create()
+        {
+            Formatter result = null;
+            switch (options.Language)
+            {
+                case "c#":
+                    result = new CSharpFormatter(options);
+                    break;
+                case "vb":
+                    result = new VisualBasicFormatter(options);
+                    break;
+                case "js":
+                    result = new JavaScriptFormatter(options);
+                    break;
+                case "html":
+                    result = new HtmlFormatter(options, htmlRegex);
+                    break;
+                case "xml":
+                    result = new HtmlFormatter(options, htmlRegex);
+                    break;
+                case "msh":
+                    result = new MshFormatter(options);
+                    break;
+            }
+            return result;
+        }
+    }
+
+    public abstract class Formatter
+    {
+        protected readonly HighlightOptions options;
+        public Formatter(HighlightOptions options)
+        {
+            this.options = options;
+
+        }
+        public abstract string Format(string text);
+    }
+
+    public class CSharpFormatter : Formatter
+    {
+        public CSharpFormatter(HighlightOptions options) : base(options) { }
+
+        public override string Format(string text)
+        {
+            var csf = new CSharpFormat();
+            csf.LineNumbers = options.DisplayLineNumbers;
+            csf.Alternate = options.AlternateLineNumbers;
+            return WebUtility.HtmlDecode(csf.FormatCode(text));
+        }
+    }
+
+    public class VisualBasicFormatter : Formatter
+    {
+        public VisualBasicFormatter(HighlightOptions options) : base(options) { }
+
+        public override string Format(string text)
+        {
+            var vbf = new VisualBasicFormat();
+            vbf.LineNumbers = options.DisplayLineNumbers;
+            vbf.Alternate = options.AlternateLineNumbers;
+            return vbf.FormatCode(text);
+        }
+    }
+
+    public class JavaScriptFormatter : Formatter
+    {
+        public JavaScriptFormatter(HighlightOptions options) : base(options) { }
+
+        public override string Format(string text)
+        {
+            var jsf = new JavaScriptFormat();
+            jsf.LineNumbers = options.DisplayLineNumbers;
+            jsf.Alternate = options.AlternateLineNumbers;
+            return WebUtility.HtmlDecode(jsf.FormatCode(text));
+        }
+    }
+
+    public class HtmlFormatter : Formatter
+    {
+        private readonly Regex regexHtml;
+
+        public HtmlFormatter(HighlightOptions options, Regex regexHtml) : base(options)
+        {
+            this.regexHtml = regexHtml;
+        }
+
+        public override string Format(string text)
+        {
+            var htmlf = new HtmlFormat();
+            htmlf.LineNumbers = options.DisplayLineNumbers;
+            htmlf.Alternate = options.AlternateLineNumbers;
+            text = regexHtml.Replace(text, string.Empty).Trim();
+            string code = htmlf.FormatCode(WebUtility.HtmlDecode(text)).Trim();
+            return code.Replace("\r\n", "<br />").Replace("\n", "<br />");
+        }
+    }
+
+    public class XmlFormatter : Formatter
+    {
+        private readonly Regex regexHtml;
+
+        public XmlFormatter(HighlightOptions options, Regex regexHtml) : base(options)
+        {
+            this.regexHtml = regexHtml;
+        }
+
+        public override string Format(string text)
+        {
+            var xmlf = new HtmlFormat();
+            xmlf.LineNumbers = options.DisplayLineNumbers;
+            xmlf.Alternate = options.AlternateLineNumbers;
+            text = text.Replace("<br />", "\r\n");
+            text = regexHtml.Replace(text, string.Empty).Trim();
+            string xml = xmlf.FormatCode(WebUtility.HtmlDecode(text)).Trim();
+            return xml.Replace("\r\n", "<br />").Replace("\n", "<br />");
+        }
+    }
+
+    public class MshFormatter : Formatter
+    {
+        public MshFormatter(HighlightOptions options) : base(options) { }
+
+        public override string Format(string text)
+        {
+            var mshf = new MshFormat();
+            mshf.LineNumbers = options.DisplayLineNumbers;
+            mshf.Alternate = options.AlternateLineNumbers;
+            return WebUtility.HtmlDecode(mshf.FormatCode(text));
+        }
     }
 }
 
