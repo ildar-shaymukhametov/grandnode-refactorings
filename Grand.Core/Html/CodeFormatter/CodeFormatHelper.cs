@@ -155,11 +155,11 @@ namespace Grand.Core.Html.CodeFormatter
             if (String.IsNullOrEmpty(text))
                 return string.Empty;
 
-            if (text.Contains("[/code]"))
-            {
-                text = regexCode2.Replace(text, new MatchEvaluator(CodeEvaluatorSimple));
-                text = regexCode2.Replace(text, "$1");
-            }
+            if (!text.Contains("[/code]"))
+                return text;
+
+            text = regexCode2.Replace(text, new MatchEvaluator(CodeEvaluatorSimple));
+            text = regexCode2.Replace(text, "$1");
             return text;
         }
 
