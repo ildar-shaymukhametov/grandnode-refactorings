@@ -31,19 +31,19 @@ namespace Grand.Core.Html.CodeFormatter
             result = Highlight(GetOptions(match), result);
             return result;
 
+            static HighlightOptions GetOptions(Match match)
+            {
+                var options = new HighlightOptions();
+
+                options.Language = match.Groups["lang"].Value;
+                options.Code = match.Groups["code"].Value;
+                options.DisplayLineNumbers = match.Groups["linenumbers"].Value == "on";
+                options.Title = match.Groups["title"].Value;
+                options.AlternateLineNumbers = match.Groups["altlinenumbers"].Value == "on";
+                return options;
+            }
         }
 
-        private static HighlightOptions GetOptions(Match match)
-        {
-            var options = new HighlightOptions();
-
-            options.Language = match.Groups["lang"].Value;
-            options.Code = match.Groups["code"].Value;
-            options.DisplayLineNumbers = match.Groups["linenumbers"].Value == "on";
-            options.Title = match.Groups["title"].Value;
-            options.AlternateLineNumbers = match.Groups["altlinenumbers"].Value == "on";
-            return options;
-        }
 
         /// <summary>
         /// Code evaluator method
