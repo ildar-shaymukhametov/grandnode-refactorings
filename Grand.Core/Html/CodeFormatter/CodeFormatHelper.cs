@@ -55,18 +55,21 @@ namespace Grand.Core.Html.CodeFormatter
             if (!match.Success)
                 return match.Value;
 
-            var options = new HighlightOptions();
-
-            options.Language = "c#";
-            options.Code = match.Groups["inner"].Value;
-            options.DisplayLineNumbers = false;
-            options.Title =string.Empty;
-            options.AlternateLineNumbers =false;
-
             string result = match.Value;
-            result = Highlight(options, result);
+            result = Highlight(GetOptions(match), result);
             return result;
 
+            static HighlightOptions GetOptions(Match match)
+            {
+                var options = new HighlightOptions();
+
+                options.Language = "c#";
+                options.Code = match.Groups["inner"].Value;
+                options.DisplayLineNumbers = false;
+                options.Title = string.Empty;
+                options.AlternateLineNumbers = false;
+                return options;
+            }
         }
 
         /// <summary>
