@@ -26,11 +26,9 @@ namespace Grand.Core.Html.CodeFormatter
             if (!match.Success)
                 return match.Value;
 
-            var options = GetOptions(match);
-
             string result = match.Value.Replace(match.Groups["begin"].Value, "");
             result = result.Replace(match.Groups["end"].Value, "");
-            result = Highlight(options, result);
+            result = Highlight(GetOptions(match), result);
             return result;
 
         }
