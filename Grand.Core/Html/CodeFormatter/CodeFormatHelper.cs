@@ -26,6 +26,17 @@ namespace Grand.Core.Html.CodeFormatter
             if (!match.Success)
                 return match.Value;
 
+            var options = GetOptions(match);
+
+            string result = match.Value.Replace(match.Groups["begin"].Value, "");
+            result = result.Replace(match.Groups["end"].Value, "");
+            result = Highlight(options, result);
+            return result;
+
+        }
+
+        private static HighlightOptions GetOptions(Match match)
+        {
             var options = new HighlightOptions();
 
             options.Language = match.Groups["lang"].Value;
@@ -33,12 +44,7 @@ namespace Grand.Core.Html.CodeFormatter
             options.DisplayLineNumbers = match.Groups["linenumbers"].Value == "on";
             options.Title = match.Groups["title"].Value;
             options.AlternateLineNumbers = match.Groups["altlinenumbers"].Value == "on";
-
-            string result = match.Value.Replace(match.Groups["begin"].Value, "");
-            result = result.Replace(match.Groups["end"].Value, "");
-            result = Highlight(options, result);
-            return result;
-
+            return options;
         }
 
         /// <summary>
