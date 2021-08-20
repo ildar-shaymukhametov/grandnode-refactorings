@@ -199,13 +199,11 @@ namespace Grand.Core.Html.CodeFormatter
 			sb = new StringBuilder();
 			
 			if (embedStyleSheet)
-			{
-				sb.Append("<style type=\"text/css\">\n");
-				sb.Append(GetCssString());
-				sb.Append("</style>\n");
-			}
+            {
+                AppendStyles(sb);
+            }
 
-			if (lineNumbers || alternate) //we have to process the code line by line
+            if (lineNumbers || alternate) //we have to process the code line by line
 			{
 				if(!subCode)
 					sb.Append("<div class=\"csharpcode\">\n");
@@ -253,6 +251,13 @@ namespace Grand.Core.Html.CodeFormatter
 			
 			return sb.ToString();
 		}
+
+        private static void AppendStyles(StringBuilder sb)
+        {
+            sb.Append("<style type=\"text/css\">\n");
+            sb.Append(GetCssString());
+            sb.Append("</style>\n");
+        }
 
         private static void AppendLineNumber(StringBuilder sb, int lineNumber)
         {
