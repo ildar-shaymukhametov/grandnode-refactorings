@@ -105,40 +105,45 @@ namespace Grand.Core.Html.CodeFormatter
 		/// <returns>A string containing the HTML code fragment.</returns>
 		protected override string MatchEval(Match match)
 		{
+            string result = null;
 			if(match.Groups[1].Success) //JavaScript code
 			{
-				return jsf.FormatSubCode(match.ToString());
+                result = jsf.FormatSubCode(match.ToString());
 			}
-			if(match.Groups[2].Success) //comment
+            else if (match.Groups[2].Success) //comment
             {
-                return GenerateCommentFragment(match);
+                result = GenerateCommentFragment(match);
             }
-            if (match.Groups[3].Success) //asp tag
+            else if (match.Groups[3].Success) //asp tag
             {
-                return GenerateFragment(match, "asp");
+                result = GenerateFragment(match, "asp");
             }
-            if (match.Groups[4].Success) //asp C# code
-			{
-				return csf.FormatSubCode(match.ToString());
+            else if (match.Groups[4].Success) //asp C# code
+            {
+                result = csf.FormatSubCode(match.ToString());
 			}
-			if(match.Groups[5].Success) //tag delimiter
-			{
-                return GenerateFragment(match, "kwrd");
+            else if (match.Groups[5].Success) //tag delimiter
+            {
+                result = GenerateFragment(match, "kwrd");
 			}
-			if(match.Groups[6].Success) //html tagname
-			{
-                return GenerateFragment(match, "html");
+            else if (match.Groups[6].Success) //html tagname
+            {
+                result = GenerateFragment(match, "html");
 			}
-			if(match.Groups[7].Success) //attributes
-			{
-				return attribRegex.Replace(match.ToString(), 
-					new MatchEvaluator(this.AttributeMatchEval));
+            else if (match.Groups[7].Success) //attributes
+            {
+                result = attribRegex.Replace(match.ToString(),
+                    new MatchEvaluator(this.AttributeMatchEval));
 			}
-			if(match.Groups[8].Success) //entity
-			{
-                return GenerateFragment(match, "attr");
+            else if (match.Groups[8].Success) //entity
+            {
+                result = GenerateFragment(match, "attr");
 			}
-			return match.ToString();
+            else
+            {
+                result = match.ToString();
+            }
+            return result;
 		}
 
         private static string GenerateFragment(Match match, string className)
