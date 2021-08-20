@@ -212,7 +212,6 @@ namespace Grand.Core.Html.CodeFormatter
                 using (var reader = new StringReader(source))
                 {
 				    int i = 0;
-				    const string spaces = "    ";
 				    string line;
 				    while ((line = reader.ReadLine()) != null)
 				    {
@@ -227,14 +226,11 @@ namespace Grand.Core.Html.CodeFormatter
 					    }
 
 					    if(lineNumbers)
-					    {
-						    var order = (int)Math.Log10(i);
-						    sb.Append("<span class=\"lnum\">" 
-							    + spaces.Substring(0, 3 - order) + i.ToString() 
-							    + ":  </span>");
-					    }
-					
-					    if(line.Length == 0)
+                        {
+                            AppendLineNumber(sb, i);
+                        }
+
+                        if (line.Length == 0)
 						    sb.Append("&nbsp;");
 					    else
 						    sb.Append(line);
@@ -257,6 +253,14 @@ namespace Grand.Core.Html.CodeFormatter
 			
 			return sb.ToString();
 		}
+
+        private static void AppendLineNumber(StringBuilder sb, int lineNumber)
+        {
+            var order = (int)Math.Log10(lineNumber);
+            sb.Append("<span class=\"lnum\">"
+                + "    ".Substring(0, 3 - order) + lineNumber.ToString()
+                + ":  </span>");
+        }
 
         private void ReplaceSpecialCharacters(StringBuilder sb)
         {
