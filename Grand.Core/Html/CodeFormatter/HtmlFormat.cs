@@ -114,20 +114,20 @@ namespace Grand.Core.Html.CodeFormatter
                 return GenerateCommentFragment(match);
             }
             if (match.Groups[3].Success) //asp tag
-			{
-				return "<span class=\"asp\">" + match.ToString() + "</span>";
-			}
-			if(match.Groups[4].Success) //asp C# code
+            {
+                return GenerateFragment(match, "asp");
+            }
+            if (match.Groups[4].Success) //asp C# code
 			{
 				return csf.FormatSubCode(match.ToString());
 			}
 			if(match.Groups[5].Success) //tag delimiter
 			{
-				return "<span class=\"kwrd\">" + match.ToString() + "</span>";
+                return GenerateFragment(match, "kwrd");
 			}
 			if(match.Groups[6].Success) //html tagname
 			{
-				return "<span class=\"html\">" + match.ToString() + "</span>";
+                return GenerateFragment(match, "html");
 			}
 			if(match.Groups[7].Success) //attributes
 			{
@@ -136,10 +136,15 @@ namespace Grand.Core.Html.CodeFormatter
 			}
 			if(match.Groups[8].Success) //entity
 			{
-				return "<span class=\"attr\">" + match.ToString() + "</span>";
+                return GenerateFragment(match, "attr");
 			}
 			return match.ToString();
 		}
+
+        private static string GenerateFragment(Match match, string className)
+        {
+            return $"<span class=\"{className}\">" + match.ToString() + "</span>";
+        }
 
         private static string GenerateCommentFragment(Match match)
         {
