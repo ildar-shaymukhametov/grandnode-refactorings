@@ -1,4 +1,4 @@
-#region Copyright © 2001-2003 Jean-Claude Manoli [jc@manoli.net]
+#region Copyright ï¿½ 2001-2003 Jean-Claude Manoli [jc@manoli.net]
 /*
  * This software is provided 'as-is', without any express or implied warranty.
  * In no event will the author(s) be held liable for any damages arising from
@@ -186,19 +186,15 @@ namespace Grand.Core.Html.CodeFormatter
 		private string FormatCode(string source, bool lineNumbers, 
 			bool alternate, bool embedStyleSheet, bool subCode)
 		{
-			//replace special characters
             var sb = new StringBuilder(source);
 
 			if(!subCode)
-			{
-				sb.Replace("&", "&amp;");
-				sb.Replace("<", "&lt;");
-				sb.Replace(">", "&gt;");
-				sb.Replace("\t", string.Empty.PadRight(_tabSpaces));
-			}
-			
-			//color the code
-			source = codeRegex.Replace(sb.ToString(), new MatchEvaluator(this.MatchEval));
+            {
+                ReplaceSpecialCharacters(sb);
+            }
+
+            //color the code
+            source = codeRegex.Replace(sb.ToString(), new MatchEvaluator(this.MatchEval));
 
 			sb = new StringBuilder();
 			
@@ -262,5 +258,12 @@ namespace Grand.Core.Html.CodeFormatter
 			return sb.ToString();
 		}
 
-	}
+        private void ReplaceSpecialCharacters(StringBuilder sb)
+        {
+            sb.Replace("&", "&amp;");
+            sb.Replace("<", "&lt;");
+            sb.Replace(">", "&gt;");
+            sb.Replace("\t", string.Empty.PadRight(_tabSpaces));
+        }
+    }
 }
