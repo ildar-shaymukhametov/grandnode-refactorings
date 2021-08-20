@@ -110,23 +110,10 @@ namespace Grand.Core.Html.CodeFormatter
 				return jsf.FormatSubCode(match.ToString());
 			}
 			if(match.Groups[2].Success) //comment
-			{
-                var reader = new StringReader(match.ToString());
-				string line;
-                var sb = new StringBuilder();
-				while ((line = reader.ReadLine()) != null)
-				{
-					if(sb.Length > 0)
-					{
-						sb.Append("\n");
-					}
-					sb.Append("<span class=\"rem\">");
-					sb.Append(line);
-					sb.Append("</span>");
-				}
-				return sb.ToString();
-			}
-			if(match.Groups[3].Success) //asp tag
+            {
+                return GenerateCommentFragment(match);
+            }
+            if (match.Groups[3].Success) //asp tag
 			{
 				return "<span class=\"asp\">" + match.ToString() + "</span>";
 			}
@@ -153,6 +140,24 @@ namespace Grand.Core.Html.CodeFormatter
 			}
 			return match.ToString();
 		}
-	}
+
+        private static string GenerateCommentFragment(Match match)
+        {
+			var reader = new StringReader(match.ToString());
+            string line;
+            var sb = new StringBuilder();
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (sb.Length > 0)
+                {
+                    sb.Append("\n");
+                }
+                sb.Append("<span class=\"rem\">");
+                sb.Append(line);
+                sb.Append("</span>");
+            }
+            return sb.ToString();
+        }
+    }
 }
 
