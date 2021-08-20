@@ -1,4 +1,4 @@
-#region Copyright © 2001-2003 Jean-Claude Manoli [jc@manoli.net]
+#region Copyright ï¿½ 2001-2003 Jean-Claude Manoli [jc@manoli.net]
 /*
  * This software is provided 'as-is', without any express or implied warranty.
  * In no event will the author(s) be held liable for any damages arising from
@@ -44,38 +44,48 @@ namespace Grand.Core.Html.CodeFormatter
 
 		/// <summary/>
 		public HtmlFormat()
-		{
-			const string regJavaScript = @"(?<=&lt;script(?:\s.*?)?&gt;).+?(?=&lt;/script&gt;)";
-			const string regComment = @"&lt;!--.*?--&gt;";
-			const string regAspTag = @"&lt;%@.*?%&gt;|&lt;%|%&gt;";
-			const string regAspCode = @"(?<=&lt;%).*?(?=%&gt;)";
-			const string regTagDelimiter = @"(?:&lt;/?!?\??(?!%)|(?<!%)/?&gt;)+";
-			const string regTagName = @"(?<=&lt;/?!?\??(?!%))[\w\.:-]+(?=.*&gt;)";
-			const string regAttributes = @"(?<=&lt;(?!%)/?!?\??[\w:-]+).*?(?=(?<!%)/?&gt;)";
-			const string regEntity = @"&amp;\w+;";
-			const string regAttributeMatch = @"(=?"".*?""|=?'.*?')|([\w:-]+)";
-			
-			//the regex object will handle all the replacements in one pass
-			string regAll = "(" + regJavaScript + ")|(" + regComment + ")|(" 
-				+ regAspTag + ")|(" + regAspCode + ")|(" 
-				+ regTagDelimiter + ")|(" + regTagName + ")|("
-				+ regAttributes + ")|(" + regEntity + ")";
+        {
+            CodeRegex = GetCodeRegex();
+            attribRegex = GetAttribRegex();
 
-			CodeRegex = new Regex(regAll, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-			attribRegex = new Regex(regAttributeMatch, RegexOptions.Singleline);
+            csf = new CSharpFormat();
+            jsf = new JavaScriptFormat();
+        }
 
-			csf = new CSharpFormat();
-			jsf = new JavaScriptFormat();
-		}
+        private Regex GetCodeRegex()
+        {
+            const string regJavaScript = @"(?<=&lt;script(?:\s.*?)?&gt;).+?(?=&lt;/script&gt;)";
+            const string regComment = @"&lt;!--.*?--&gt;";
+            const string regAspTag = @"&lt;%@.*?%&gt;|&lt;%|%&gt;";
+            const string regAspCode = @"(?<=&lt;%).*?(?=%&gt;)";
+            const string regTagDelimiter = @"(?:&lt;/?!?\??(?!%)|(?<!%)/?&gt;)+";
+            const string regTagName = @"(?<=&lt;/?!?\??(?!%))[\w\.:-]+(?=.*&gt;)";
+            const string regAttributes = @"(?<=&lt;(?!%)/?!?\??[\w:-]+).*?(?=(?<!%)/?&gt;)";
+            const string regEntity = @"&amp;\w+;";
 
-		/// <summary>
-		/// Called to evaluate the HTML fragment corresponding to each 
-		/// attribute's name/value in the code.
-		/// </summary>
-		/// <param name="match">The <see cref="Match"/> resulting from a 
-		/// single regular expression match.</param>
-		/// <returns>A string containing the HTML code fragment.</returns>
-		private string AttributeMatchEval(Match match)
+            //the regex object will handle all the replacements in one pass
+            string regAll = "(" + regJavaScript + ")|(" + regComment + ")|("
+                + regAspTag + ")|(" + regAspCode + ")|("
+                + regTagDelimiter + ")|(" + regTagName + ")|("
+                + regAttributes + ")|(" + regEntity + ")";
+
+            return new Regex(regAll, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        }
+
+        private Regex GetAttribRegex()
+        {
+            const string regAttributeMatch = @"(=?"".*?""|=?'.*?')|([\w:-]+)";
+            return new Regex(regAttributeMatch, RegexOptions.Singleline);
+        }
+
+        /// <summary>
+        /// Called to evaluate the HTML fragment corresponding to each 
+        /// attribute's name/value in the code.
+        /// </summary>
+        /// <param name="match">The <see cref="Match"/> resulting from a 
+        /// single regular expression match.</param>
+        /// <returns>A string containing the HTML code fragment.</returns>
+        private string AttributeMatchEval(Match match)
 		{
 			if(match.Groups[1].Success) //attribute value
 				return "<span class=\"kwrd\">" + match.ToString() + "</span>";
