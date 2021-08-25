@@ -108,6 +108,18 @@ namespace Grand.Core.Infrastructure
         /// <param name="assemblies"></param>
         private void AddAssembliesInAppDomain(List<string> addedAssemblyNames, List<Assembly> assemblies)
         {
+            AddAssemblies(addedAssemblyNames, assemblies);
+
+            if (Roslyn.RoslynCompiler.ReferencedScripts == null)
+            {
+                return;
+            }
+
+            AddScripts(addedAssemblyNames, assemblies);
+        }
+
+        private static void AddAssemblies(List<string> addedAssemblyNames, List<Assembly> assemblies)
+        {
             Assembly currentAssem = Assembly.GetExecutingAssembly();
             AppDomain.CurrentDomain.GetAssemblies()
                 .Where(x => x.GetReferencedAssemblies().ToList().Where(
@@ -120,13 +132,6 @@ namespace Grand.Core.Infrastructure
                     assemblies.Add(x);
                     addedAssemblyNames.Add(x.FullName);
                 });
-
-            if (Roslyn.RoslynCompiler.ReferencedScripts == null)
-            {
-                return;
-            }
-
-            AddScripts(addedAssemblyNames, assemblies);
         }
 
         private static void AddScripts(List<string> addedAssemblyNames, List<Assembly> assemblies)
