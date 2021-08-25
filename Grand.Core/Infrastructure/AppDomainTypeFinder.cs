@@ -50,17 +50,10 @@ namespace Grand.Core.Infrastructure
                         if (t.IsInterface)
                             continue;
 
-                        if (onlyConcreteClasses)
-                        {
-                            if (t.IsClass && !t.IsAbstract)
-                            {
-                                result.Add(t);
-                            }
-                        }
-                        else
-                        {
-                            result.Add(t);
-                        }
+                        if (onlyConcreteClasses && (!t.IsClass || t.IsAbstract))
+                            continue;
+
+                        result.Add(t);
                     }
                 }
             }
