@@ -3,6 +3,7 @@ using Grand.Domain.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Grand.Core.Data
@@ -39,41 +40,67 @@ namespace Grand.Core.Data
             if (String.IsNullOrEmpty(text))
                 return shellSettings;
 
-            var settings = new List<string>();
+            ExtractSettings(text)
+                .Select(CreateKeyValuePairs)
+                .ToList()
+                .ForEach(pair => UpdateSettings(shellSettings, pair));
+
+            return shellSettings;
+        }
+
+        private KeyValuePair<string, string> CreateKeyValuePairs(string setting)
+        {
+            var separatorIndex = setting.IndexOf(separator);
+            var value = GetValue(setting, separatorIndex);
+            var key = GetKey(setting, separatorIndex);
+            return new KeyValuePair<string, string>(key, value);
+        }
+
+        private static string GetValue(string setting, int separatorIndex)
+        {
+            return setting.Substring(separatorIndex + 1).Trim();
+        }
+
+        private string GetKey(string setting, int separatorIndex)
+        {
+            var result = setting.Substring(0, separatorIndex).Trim();
+            if (!string.IsNullOrEmpty(result))
+                result = RemoveSpecialCharacters(result);
+            return result;
+        }
+
+        private static void UpdateSettings(DataSettings shellSettings, KeyValuePair<string, string> pair)
+        {
+            switch (pair.Key)
+            {
+                case "DataProvider":
+                    shellSettings.DataProvider = pair.Value;
+                    break;
+                case "DataConnectionString":
+                    shellSettings.DataConnectionString = pair.Value;
+                    break;
+                default:
+                    shellSettings.RawDataSettings.Add(pair.Key, pair.Value);
+                    break;
+            }
+        }
+
+        private static List<string> ExtractSettings(string text)
+        {
+            var result = new List<string>();
             using (var reader = new StringReader(text))
             {
                 string str;
                 while ((str = reader.ReadLine()) != null)
-                    settings.Add(str);
-            }
-
-            foreach (var setting in settings)
-            {
-                var separatorIndex = setting.IndexOf(separator);
-                if (separatorIndex == -1)
                 {
-                    continue;
-                }
-                var key = setting.Substring(0, separatorIndex).Trim();
-                var value = setting.Substring(separatorIndex + 1).Trim();
-                if (!string.IsNullOrEmpty(key))
-                    key = RemoveSpecialCharacters(key);
-
-                switch (key)
-                {
-                    case "DataProvider":
-                        shellSettings.DataProvider = value;
-                        break;
-                    case "DataConnectionString":
-                        shellSettings.DataConnectionString = value;
-                        break;
-                    default:
-                        shellSettings.RawDataSettings.Add(key, value);
-                        break;
+                    if (str.IndexOf(separator) != -1)
+                    {
+                        result.Add(str);
+                    }
                 }
             }
 
-            return shellSettings;
+            return result;
         }
 
         /// <summary>

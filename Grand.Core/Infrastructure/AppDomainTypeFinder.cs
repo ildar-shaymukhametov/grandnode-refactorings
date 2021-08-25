@@ -35,47 +35,33 @@ namespace Grand.Core.Infrastructure
             var result = new List<Type>();
             try
             {
-                foreach (var a in assemblies)
-                {
-                    Type[] types = null;
-                    types = a.GetTypes();
-                    if (types == null)
-                        continue;
-
-                    foreach (var t in types)
-                    {
-                        if (!assignTypeFrom.IsAssignableFrom(t) && (!assignTypeFrom.IsGenericTypeDefinition || !DoesTypeImplementOpenGeneric(t, assignTypeFrom)))
-                            continue;
-
-                        if (t.IsInterface)
-                            continue;
-
-                        if (onlyConcreteClasses)
-                        {
-                            if (t.IsClass && !t.IsAbstract)
-                            {
-                                result.Add(t);
-                            }
-                        }
-                        else
-                        {
-                            result.Add(t);
-                        }
-                    }
-                }
+                assemblies.Select(x => x.GetTypes())
+                    .Where(x => x != null)
+                    .SelectMany(x => x)
+                    .Where(x => assignTypeFrom.IsAssignableFrom(x) || assignTypeFrom.IsGenericTypeDefinition)
+                    .Where(x => DoesTypeImplementOpenGeneric(x, assignTypeFrom))
+                    .Where(x => !x.IsInterface)
+                    .Where(x => !onlyConcreteClasses || x.IsClass && !x.IsAbstract)
+                    .ToList()
+                    .ForEach(result.Add);
             }
             catch (ReflectionTypeLoadException ex)
             {
-                var msg = string.Empty;
-                foreach (var e in ex.LoaderExceptions)
-                    msg += e.Message + Environment.NewLine;
-
-                var fail = new Exception(msg, ex);
+                var fail = FlattenException(ex);
                 Debug.WriteLine(fail.Message, fail);
 
                 throw fail;
             }
             return result;
+        }
+
+        private static Exception FlattenException(ReflectionTypeLoadException ex)
+        {
+            var msg = string.Empty;
+            foreach (var e in ex.LoaderExceptions)
+                msg += e.Message + Environment.NewLine;
+
+            return new Exception(msg, ex);
         }
 
         // <summary>
@@ -89,16 +75,9 @@ namespace Grand.Core.Infrastructure
             try
             {
                 var genericTypeDefinition = openGeneric.GetGenericTypeDefinition();
-                foreach (var implementedInterface in type.FindInterfaces((objType, objCriteria) => true, null))
-                {
-                    if (!implementedInterface.IsGenericType)
-                        continue;
-
-                    var isMatch = genericTypeDefinition.IsAssignableFrom(implementedInterface.GetGenericTypeDefinition());
-                    return isMatch;
-                }
-
-                return false;
+                return type.FindInterfaces((objType, objCriteria) => true, null)
+                    .Where(x => x.IsGenericType)
+                    .Any(x => genericTypeDefinition.IsAssignableFrom(x.GetGenericTypeDefinition()));
             }
             catch
             {
@@ -129,34 +108,43 @@ namespace Grand.Core.Infrastructure
         /// <param name="assemblies"></param>
         private void AddAssembliesInAppDomain(List<string> addedAssemblyNames, List<Assembly> assemblies)
         {
-            Assembly currentAssem = Assembly.GetExecutingAssembly();
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            AddAssemblies(addedAssemblyNames, assemblies);
+
+            if (Roslyn.RoslynCompiler.ReferencedScripts == null)
             {
-                var product = assembly.GetCustomAttribute<AssemblyProductAttribute>();
-                var referencedAssemblies = assembly.GetReferencedAssemblies().ToList();
-                if (referencedAssemblies.Where(x => x.FullName == currentAssem.FullName).Any()
-                    || product?.Product == "grandnode")
-                {
-                    if (!addedAssemblyNames.Contains(assembly.FullName))
-                    {
-                        assemblies.Add(assembly);
-                        addedAssemblyNames.Add(assembly.FullName);
-                    }
-                }
+                return;
             }
-            //add scripts
-            if (Roslyn.RoslynCompiler.ReferencedScripts != null)
-                foreach (var scripts in Roslyn.RoslynCompiler.ReferencedScripts)
+
+            AddScripts(addedAssemblyNames, assemblies);
+        }
+
+        private static void AddAssemblies(List<string> addedAssemblyNames, List<Assembly> assemblies)
+        {
+            Assembly currentAssem = Assembly.GetExecutingAssembly();
+            AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => x.GetReferencedAssemblies().ToList().Where(
+                    x => x.FullName == currentAssem.FullName).Any() ||
+                    x.GetCustomAttribute<AssemblyProductAttribute>()?.Product == "grandnode")
+                .Where(x => addedAssemblyNames.Contains(x.FullName))
+                .ToList()
+                .ForEach(x =>
                 {
-                    if (!string.IsNullOrEmpty(scripts.ReferencedAssembly.FullName))
-                    {
-                        if (!addedAssemblyNames.Contains(scripts.ReferencedAssembly.FullName))
-                        {
-                            assemblies.Add(scripts.ReferencedAssembly);
-                            addedAssemblyNames.Add(scripts.ReferencedAssembly.FullName);
-                        }
-                    }
-                }
+                    assemblies.Add(x);
+                    addedAssemblyNames.Add(x.FullName);
+                });
+        }
+
+        private static void AddScripts(List<string> addedAssemblyNames, List<Assembly> assemblies)
+        {
+            Roslyn.RoslynCompiler.ReferencedScripts
+                .Where(x => !string.IsNullOrEmpty(x.ReferencedAssembly.FullName))
+                .Where(x => !addedAssemblyNames.Contains(x.ReferencedAssembly.FullName))
+                .ToList()
+                .ForEach(x =>
+                {
+                    assemblies.Add(x.ReferencedAssembly);
+                    addedAssemblyNames.Add(x.ReferencedAssembly.FullName);
+                });
         }
 
         /// <summary>

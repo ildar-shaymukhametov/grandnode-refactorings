@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -23,41 +24,42 @@ namespace Grand.Core.Html
             if (string.IsNullOrEmpty(text))
                 return string.Empty;
 
-            const string allowedTags = "br,hr,b,i,u,a,div,ol,ul,li,blockquote,img,span,p,em,strong,font,pre,h1,h2,h3,h4,h5,h6,address,cite";
+            var allowedTags = "br,hr,b,i,u,a,div,ol,ul,li,blockquote,img,span,p,em,strong,font,pre,h1,h2,h3,h4,h5,h6,address,cite".Split(',');
 
-            var m = Regex.Matches(text, "<.*?>", RegexOptions.IgnoreCase);
-            for (int i = m.Count - 1; i >= 0; i--)
-            {
-                string tag = text.Substring(m[i].Index + 1, m[i].Length - 1).Trim().ToLower();
-
-                if (!IsValidTag(tag, allowedTags))
+            return Regex.Matches(text, "<.*?>", RegexOptions.IgnoreCase)
+                .Aggregate(text, (acc, match) =>
                 {
-                    text = text.Remove(m[i].Index, m[i].Length);
-                }
-            }
+                    string tag = acc.Substring(match.Index + 1, match.Length - 1).Trim().ToLower();
 
-            return text;
+                    if (!IsValidTag(tag, allowedTags))
+                    {
+                        acc = acc.Remove(match.Index, match.Length);
+                    }
+                    return acc;
+                });
         }
 
-        private static bool IsValidTag(string tag, string tags)
+        private static bool IsValidTag(string tag, string[] allowedTags)
         {
-            string[] allowedTags = tags.Split(',');
             if (tag.IndexOf("javascript") >= 0) return false;
             if (tag.IndexOf("vbscript") >= 0) return false;
             if (tag.IndexOf("onclick") >= 0) return false;
 
-            var endchars = new[] { ' ', '>', '/', '\t' };
+            return allowedTags.Any(x => x == GetTag(tag));
+        }
 
-            int pos = tag.IndexOfAny(endchars, 1);
+        private static string GetTag(string tag)
+        {
+            var pos = GetPos(tag);
             if (pos > 0) tag = tag.Substring(0, pos);
             if (tag[0] == '/') tag = tag.Substring(1);
+            return tag;
+        }
 
-            foreach (string aTag in allowedTags)
-            {
-                if (tag == aTag) return true;
-            }
-
-            return false;
+        private static int GetPos(string tag)
+        {
+            var endchars = new[] { ' ', '>', '/', '\t' };
+            return tag.IndexOfAny(endchars, 1);
         }
         #endregion
 

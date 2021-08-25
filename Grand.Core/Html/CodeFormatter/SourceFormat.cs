@@ -1,4 +1,4 @@
-#region Copyright © 2001-2003 Jean-Claude Manoli [jc@manoli.net]
+#region Copyright ï¿½ 2001-2003 Jean-Claude Manoli [jc@manoli.net]
 /*
  * This software is provided 'as-is', without any express or implied warranty.
  * In no event will the author(s) be held liable for any damages arising from
@@ -186,81 +186,103 @@ namespace Grand.Core.Html.CodeFormatter
 		private string FormatCode(string source, bool lineNumbers, 
 			bool alternate, bool embedStyleSheet, bool subCode)
 		{
-			//replace special characters
             var sb = new StringBuilder(source);
 
 			if(!subCode)
-			{
-				sb.Replace("&", "&amp;");
-				sb.Replace("<", "&lt;");
-				sb.Replace(">", "&gt;");
-				sb.Replace("\t", string.Empty.PadRight(_tabSpaces));
-			}
-			
-			//color the code
-			source = codeRegex.Replace(sb.ToString(), new MatchEvaluator(this.MatchEval));
+            {
+                ReplaceSpecialCharacters(sb);
+            }
+
+            //color the code
+            source = codeRegex.Replace(sb.ToString(), new MatchEvaluator(this.MatchEval));
 
 			sb = new StringBuilder();
 			
 			if (embedStyleSheet)
-			{
-				sb.Append("<style type=\"text/css\">\n");
-				sb.Append(GetCssString());
-				sb.Append("</style>\n");
-			}
+            {
+                AppendStyles(sb);
+            }
 
-			if (lineNumbers || alternate) //we have to process the code line by line
-			{
-				if(!subCode)
-					sb.Append("<div class=\"csharpcode\">\n");
+            if (!subCode)
+            {
+                sb.Append("<div class=\"csharpcode\">\n");
+                sb.Append(ProcessSource(source, lineNumbers, alternate));
+                sb.Append(GetClosingTag(lineNumbers, alternate));
+            }
+
+            return sb.ToString();
+        }
+
+        private static StringBuilder ProcessSource(string source, bool lineNumbers, bool alternate)
+        {
+            var result = new StringBuilder();
+            if (lineNumbers || alternate) //we have to process the code line by line
+            {
                 using (var reader = new StringReader(source))
                 {
 				    int i = 0;
-				    const string spaces = "    ";
 				    string line;
 				    while ((line = reader.ReadLine()) != null)
 				    {
 					    i++;
 					    if (alternate && ((i % 2) == 1))
 					    {
-						    sb.Append("<pre class=\"alt\">");
+						    result.Append("<pre class=\"alt\">");
 					    }
 					    else
 					    {
-						    sb.Append("<pre>");
+						    result.Append("<pre>");
 					    }
 
 					    if(lineNumbers)
-					    {
-						    var order = (int)Math.Log10(i);
-						    sb.Append("<span class=\"lnum\">" 
-							    + spaces.Substring(0, 3 - order) + i.ToString() 
-							    + ":  </span>");
-					    }
-					
-					    if(line.Length == 0)
-						    sb.Append("&nbsp;");
+                        {
+                            AppendLineNumber(result, i);
+                        }
+
+                        if (line.Length == 0)
+						    result.Append("&nbsp;");
 					    else
-						    sb.Append(line);
-					    sb.Append("</pre>\n");
+						    result.Append(line);
+					    result.Append("</pre>\n");
 				    }
                 }
-				if(!subCode)
-					sb.Append("</div>");
-			}
-			else
-			{
-				//have to use a <pre> because IE below ver 6 does not understand 
-				//the "white-space: pre" CSS value
-				if(!subCode)
-					sb.Append("<pre class=\"csharpcode\">\n");
-				sb.Append(source);
-				if(!subCode)
-					sb.Append("</pre>");
-			}
+            }
+            else
+            {
+                result.Append(source);
+            }
 			
-			return sb.ToString();
-		}
+			return result;
+        }
 
-	}
+        private static string GetClosingTag(bool lineNumbers, bool alternate)
+        {
+			//have to use a <pre> because IE below ver 6 does not understand 
+			//the "white-space: pre" CSS value
+			return lineNumbers || alternate ? "</div>" : "</pre>";
+        }
+
+        private static void AppendStyles(StringBuilder sb)
+        {
+            sb.Append("<style type=\"text/css\">\n");
+            sb.Append(GetCssString());
+            sb.Append("</style>\n");
+        }
+
+        private static void AppendLineNumber(StringBuilder sb, int lineNumber)
+        {
+            var order = (int)Math.Log10(lineNumber);
+            sb.Append("<span class=\"lnum\">"
+                + "    ".Substring(0, 3 - order) + lineNumber.ToString()
+                + ":  </span>");
+        }
+
+        private void ReplaceSpecialCharacters(StringBuilder sb)
+        {
+            sb.Replace("&", "&amp;");
+            sb.Replace("<", "&lt;");
+            sb.Replace(">", "&gt;");
+            sb.Replace("\t", string.Empty.PadRight(_tabSpaces));
+        }
+    }
 }
