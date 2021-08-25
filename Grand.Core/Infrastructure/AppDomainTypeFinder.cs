@@ -126,7 +126,11 @@ namespace Grand.Core.Infrastructure
                 return;
             }
 
-            //add scripts
+            AddScripts(addedAssemblyNames, assemblies);
+        }
+
+        private static void AddScripts(List<string> addedAssemblyNames, List<Assembly> assemblies)
+        {
             Roslyn.RoslynCompiler.ReferencedScripts
                 .Where(x => !string.IsNullOrEmpty(x.ReferencedAssembly.FullName))
                 .Where(x => !addedAssemblyNames.Contains(x.ReferencedAssembly.FullName))
