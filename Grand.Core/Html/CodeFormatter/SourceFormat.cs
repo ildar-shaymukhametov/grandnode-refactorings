@@ -203,10 +203,21 @@ namespace Grand.Core.Html.CodeFormatter
                 AppendStyles(sb);
             }
 
+            if (!subCode)
+            {
+                sb.Append("<div class=\"csharpcode\">\n");
+                sb.Append(ProcessSource(source, lineNumbers, alternate));
+                sb.Append(GetClosingTag(lineNumbers, alternate));
+            }
+
+            return sb.ToString();
+        }
+
+        private static StringBuilder ProcessSource(string source, bool lineNumbers, bool alternate)
+        {
+            var result = new StringBuilder();
             if (lineNumbers || alternate) //we have to process the code line by line
-			{
-				if(!subCode)
-					sb.Append("<div class=\"csharpcode\">\n");
+            {
                 using (var reader = new StringReader(source))
                 {
 				    int i = 0;
@@ -216,41 +227,40 @@ namespace Grand.Core.Html.CodeFormatter
 					    i++;
 					    if (alternate && ((i % 2) == 1))
 					    {
-						    sb.Append("<pre class=\"alt\">");
+						    result.Append("<pre class=\"alt\">");
 					    }
 					    else
 					    {
-						    sb.Append("<pre>");
+						    result.Append("<pre>");
 					    }
 
 					    if(lineNumbers)
                         {
-                            AppendLineNumber(sb, i);
+                            AppendLineNumber(result, i);
                         }
 
                         if (line.Length == 0)
-						    sb.Append("&nbsp;");
+						    result.Append("&nbsp;");
 					    else
-						    sb.Append(line);
-					    sb.Append("</pre>\n");
+						    result.Append(line);
+					    result.Append("</pre>\n");
 				    }
                 }
-				if(!subCode)
-					sb.Append("</div>");
-			}
-			else
-			{
-				//have to use a <pre> because IE below ver 6 does not understand 
-				//the "white-space: pre" CSS value
-				if(!subCode)
-					sb.Append("<pre class=\"csharpcode\">\n");
-				sb.Append(source);
-				if(!subCode)
-					sb.Append("</pre>");
-			}
+            }
+            else
+            {
+                result.Append(source);
+            }
 			
-			return sb.ToString();
-		}
+			return result;
+        }
+
+        private static string GetClosingTag(bool lineNumbers, bool alternate)
+        {
+			//have to use a <pre> because IE below ver 6 does not understand 
+			//the "white-space: pre" CSS value
+			return lineNumbers || alternate ? "</div>" : "</pre>";
+        }
 
         private static void AppendStyles(StringBuilder sb)
         {
