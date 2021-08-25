@@ -75,16 +75,9 @@ namespace Grand.Core.Infrastructure
             try
             {
                 var genericTypeDefinition = openGeneric.GetGenericTypeDefinition();
-                foreach (var implementedInterface in type.FindInterfaces((objType, objCriteria) => true, null))
-                {
-                    if (!implementedInterface.IsGenericType)
-                        continue;
-
-                    var isMatch = genericTypeDefinition.IsAssignableFrom(implementedInterface.GetGenericTypeDefinition());
-                    return isMatch;
-                }
-
-                return false;
+                return type.FindInterfaces((objType, objCriteria) => true, null)
+                    .Where(x => x.IsGenericType)
+                    .Any(x => genericTypeDefinition.IsAssignableFrom(x.GetGenericTypeDefinition()));
             }
             catch
             {
