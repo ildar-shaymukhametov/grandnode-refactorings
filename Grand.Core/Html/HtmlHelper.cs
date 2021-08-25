@@ -26,18 +26,17 @@ namespace Grand.Core.Html
 
             var allowedTags = "br,hr,b,i,u,a,div,ol,ul,li,blockquote,img,span,p,em,strong,font,pre,h1,h2,h3,h4,h5,h6,address,cite".Split(',');
 
-            var m = Regex.Matches(text, "<.*?>", RegexOptions.IgnoreCase);
-            for (int i = m.Count - 1; i >= 0; i--)
-            {
-                string tag = text.Substring(m[i].Index + 1, m[i].Length - 1).Trim().ToLower();
-
-                if (!IsValidTag(tag, allowedTags))
+            return Regex.Matches(text, "<.*?>", RegexOptions.IgnoreCase)
+                .Aggregate(text, (acc, match) =>
                 {
-                    text = text.Remove(m[i].Index, m[i].Length);
-                }
-            }
+                    string tag = acc.Substring(match.Index + 1, match.Length - 1).Trim().ToLower();
 
-            return text;
+                    if (!IsValidTag(tag, allowedTags))
+                    {
+                        acc = acc.Remove(match.Index, match.Length);
+                    }
+                    return acc;
+                });
         }
 
         private static bool IsValidTag(string tag, string[] allowedTags)
