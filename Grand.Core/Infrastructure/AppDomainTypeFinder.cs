@@ -66,16 +66,21 @@ namespace Grand.Core.Infrastructure
             }
             catch (ReflectionTypeLoadException ex)
             {
-                var msg = string.Empty;
-                foreach (var e in ex.LoaderExceptions)
-                    msg += e.Message + Environment.NewLine;
-
-                var fail = new Exception(msg, ex);
+                var fail = FlattenException(ex);
                 Debug.WriteLine(fail.Message, fail);
 
                 throw fail;
             }
             return result;
+        }
+
+        private static Exception FlattenException(ReflectionTypeLoadException ex)
+        {
+            var msg = string.Empty;
+            foreach (var e in ex.LoaderExceptions)
+                msg += e.Message + Environment.NewLine;
+
+            return new Exception(msg, ex);
         }
 
         // <summary>
