@@ -45,9 +45,7 @@ namespace Grand.Core.Html
             if (tag.IndexOf("vbscript") >= 0) return false;
             if (tag.IndexOf("onclick") >= 0) return false;
 
-            var endchars = new[] { ' ', '>', '/', '\t' };
-
-            int pos = tag.IndexOfAny(endchars, 1);
+            var pos = GetPos(tag);
             if (pos > 0) tag = tag.Substring(0, pos);
             if (tag[0] == '/') tag = tag.Substring(1);
 
@@ -57,6 +55,12 @@ namespace Grand.Core.Html
             }
 
             return false;
+        }
+
+        private static int GetPos(string tag)
+        {
+            var endchars = new[] { ' ', '>', '/', '\t' };
+            return tag.IndexOfAny(endchars, 1);
         }
         #endregion
 
