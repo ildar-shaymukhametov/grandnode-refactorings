@@ -109,20 +109,18 @@ namespace Grand.Core.Infrastructure
         private void AddAssembliesInAppDomain(List<string> addedAssemblyNames, List<Assembly> assemblies)
         {
             Assembly currentAssem = Assembly.GetExecutingAssembly();
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                var product = assembly.GetCustomAttribute<AssemblyProductAttribute>();
-                var referencedAssemblies = assembly.GetReferencedAssemblies().ToList();
-                if (referencedAssemblies.Where(x => x.FullName == currentAssem.FullName).Any()
-                    || product?.Product == "grandnode")
+            AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => x.GetReferencedAssemblies().ToList().Where(
+                    x => x.FullName == currentAssem.FullName).Any() ||
+                    x.GetCustomAttribute<AssemblyProductAttribute>()?.Product == "grandnode")
+                .Where(x => addedAssemblyNames.Contains(x.FullName))
+                .ToList()
+                .ForEach(x =>
                 {
-                    if (!addedAssemblyNames.Contains(assembly.FullName))
-                    {
-                        assemblies.Add(assembly);
-                        addedAssemblyNames.Add(assembly.FullName);
-                    }
-                }
-            }
+                    assemblies.Add(x);
+                    addedAssemblyNames.Add(x.FullName);
+                });
+
             //add scripts
             if (Roslyn.RoslynCompiler.ReferencedScripts != null)
                 foreach (var scripts in Roslyn.RoslynCompiler.ReferencedScripts)
