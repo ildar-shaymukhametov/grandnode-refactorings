@@ -127,17 +127,15 @@ namespace Grand.Core.Infrastructure
             }
 
             //add scripts
-            foreach (var scripts in Roslyn.RoslynCompiler.ReferencedScripts)
-            {
-                if (!string.IsNullOrEmpty(scripts.ReferencedAssembly.FullName))
+            Roslyn.RoslynCompiler.ReferencedScripts
+                .Where(x => !string.IsNullOrEmpty(x.ReferencedAssembly.FullName))
+                .Where(x => !addedAssemblyNames.Contains(x.ReferencedAssembly.FullName))
+                .ToList()
+                .ForEach(x =>
                 {
-                    if (!addedAssemblyNames.Contains(scripts.ReferencedAssembly.FullName))
-                    {
-                        assemblies.Add(scripts.ReferencedAssembly);
-                        addedAssemblyNames.Add(scripts.ReferencedAssembly.FullName);
-                    }
-                }
-            }
+                    assemblies.Add(x.ReferencedAssembly);
+                    addedAssemblyNames.Add(x.ReferencedAssembly.FullName);
+                });
         }
 
         /// <summary>
