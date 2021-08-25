@@ -35,27 +35,15 @@ namespace Grand.Core.Infrastructure
             var result = new List<Type>();
             try
             {
-                foreach (var a in assemblies)
-                {
-                    Type[] types = null;
-                    types = a.GetTypes();
-                    if (types == null)
-                        continue;
-
-                    foreach (var t in types)
-                    {
-                        if (!assignTypeFrom.IsAssignableFrom(t) && (!assignTypeFrom.IsGenericTypeDefinition || !DoesTypeImplementOpenGeneric(t, assignTypeFrom)))
-                            continue;
-
-                        if (t.IsInterface)
-                            continue;
-
-                        if (onlyConcreteClasses && (!t.IsClass || t.IsAbstract))
-                            continue;
-
-                        result.Add(t);
-                    }
-                }
+                assemblies.Select(x => x.GetTypes())
+                    .Where(x => x != null)
+                    .SelectMany(x => x)
+                    .Where(x => assignTypeFrom.IsAssignableFrom(x) || assignTypeFrom.IsGenericTypeDefinition)
+                    .Where(x => DoesTypeImplementOpenGeneric(x, assignTypeFrom))
+                    .Where(x => !x.IsInterface)
+                    .Where(x => !onlyConcreteClasses || x.IsClass && !x.IsAbstract)
+                    .ToList()
+                    .ForEach(result.Add);
             }
             catch (ReflectionTypeLoadException ex)
             {
