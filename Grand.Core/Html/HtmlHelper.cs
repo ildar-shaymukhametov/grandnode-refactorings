@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -49,12 +50,7 @@ namespace Grand.Core.Html
             if (pos > 0) tag = tag.Substring(0, pos);
             if (tag[0] == '/') tag = tag.Substring(1);
 
-            foreach (string aTag in allowedTags)
-            {
-                if (tag == aTag) return true;
-            }
-
-            return false;
+            return allowedTags.Any(x => x == tag);
         }
 
         private static int GetPos(string tag)
