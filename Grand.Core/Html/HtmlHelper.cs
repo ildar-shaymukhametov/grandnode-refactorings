@@ -23,7 +23,7 @@ namespace Grand.Core.Html
             if (string.IsNullOrEmpty(text))
                 return string.Empty;
 
-            const string allowedTags = "br,hr,b,i,u,a,div,ol,ul,li,blockquote,img,span,p,em,strong,font,pre,h1,h2,h3,h4,h5,h6,address,cite";
+            var allowedTags = "br,hr,b,i,u,a,div,ol,ul,li,blockquote,img,span,p,em,strong,font,pre,h1,h2,h3,h4,h5,h6,address,cite".Split(',');
 
             var m = Regex.Matches(text, "<.*?>", RegexOptions.IgnoreCase);
             for (int i = m.Count - 1; i >= 0; i--)
@@ -39,9 +39,8 @@ namespace Grand.Core.Html
             return text;
         }
 
-        private static bool IsValidTag(string tag, string tags)
+        private static bool IsValidTag(string tag, string[] allowedTags)
         {
-            string[] allowedTags = tags.Split(',');
             if (tag.IndexOf("javascript") >= 0) return false;
             if (tag.IndexOf("vbscript") >= 0) return false;
             if (tag.IndexOf("onclick") >= 0) return false;
