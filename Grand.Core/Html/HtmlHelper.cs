@@ -46,11 +46,15 @@ namespace Grand.Core.Html
             if (tag.IndexOf("vbscript") >= 0) return false;
             if (tag.IndexOf("onclick") >= 0) return false;
 
+            return allowedTags.Any(x => x == GetTag(tag));
+        }
+
+        private static string GetTag(string tag)
+        {
             var pos = GetPos(tag);
             if (pos > 0) tag = tag.Substring(0, pos);
             if (tag[0] == '/') tag = tag.Substring(1);
-
-            return allowedTags.Any(x => x == tag);
+            return tag;
         }
 
         private static int GetPos(string tag)
